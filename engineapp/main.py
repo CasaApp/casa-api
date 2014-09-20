@@ -3,6 +3,7 @@ from flask import request
 from flask import Response
 from Sublet import SubletEntity
 from User import UserEntity
+from Token import TokenEntity
 from google.appengine.ext import ndb
 import json
 import geopy
@@ -101,7 +102,9 @@ def api_authenticate():
             return 'Unauthorized', 401
         return print_json({"user": account.Get(), "token": account.Login()})
     elif request.method =='DELETE':
-        pass
+        token_key = ndb.Key(urlsafe=request.args.get("token"))
+        token_key.delete()
+        return ""
     
 @app.route('/')
 def test():
