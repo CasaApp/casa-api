@@ -108,7 +108,7 @@ def api_authenticate():
     elif request.method =='DELETE':
         token_key = ndb.Key(urlsafe=request.args.get("token"))
         token_key.delete()
-        return ""
+        return print_json({"status":"success"})
     
 @app.route('/api/users/<int:user_id>', methods=['GET', 'PUT'])
 def api_users_with_id(user_id):
@@ -127,7 +127,7 @@ def api_users_bookmarks(user_id):
 
     if request.method == 'POST':
         user.InsertBookmark(request.get_json().get("sublet_id"))
-        return ""
+        return print_json({"status":"success"})
     elif request.method == 'GET':
         offset = request.args.get("offset", 0)
         limit = request.args.get("limit", 10)
@@ -152,7 +152,7 @@ def api_users_bookmarks_with_sublet_id(user_id, sublet_id):
 
     if request.method == 'DELETE':
         user.DeleteBookmark(sublet_id)
-        return ""
+        return print_json({"status":"success"})
     
 @app.route('/')
 def test():
