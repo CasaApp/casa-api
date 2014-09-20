@@ -10,6 +10,7 @@ import geopy
 import geopy.distance
 import time
 from datetime import datetime
+from operator import itemgetter
 app = Flask(__name__)
 
 # Note: We don't need to call run() since our application is embedded within
@@ -47,6 +48,7 @@ def api_sublets():
         maximum_price = float(request.args.get("maximum_price", 1000000))
         start_date = get_date(request.args.get("start_date"))
         end_date = get_date(request.args.get("end_date"))
+        sort = request.args.get("sort", "distance")
         #geosearch
         center = geopy.Point(float(request.args.get("latitude")), float(request.args.get("longitude")))
         radius = float(request.args.get("radius"))
@@ -70,7 +72,9 @@ def api_sublets():
                 info = s.Get()
                 info["distance"] = distance
                 infos.append(info)
-
+        
+        infos = sorted(infos, key=itemgetter(sort))
+        
         more = len(infos) > offset + limit
         #infos = [s.Get() for s in sublets[offset:offset + limit] if geopy.distance.distance(geopy.Point(s.location.lat, s.location.lon), center) <= radius]
         return print_json({"limit": limit, "offset": offset, "more": more, "sublets": infos[offset:offset + limit]})
@@ -105,6 +109,7 @@ def api_authenticate():
         token_key = ndb.Key(urlsafe=request.args.get("token"))
         token_key.delete()
         return ""
+    
 @app.route('/api/users/<int:user_id>', methods=['GET', 'PUT'])
 def api_user_with_id(user_id):
     user = UserEntity.get_by_id(user_id)
