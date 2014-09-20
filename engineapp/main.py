@@ -118,6 +118,17 @@ def api_user_with_id(user_id):
     
     if request.method == 'GET':
         return print_json(user.Get())
+
+@app.route('/api/users/<int:user_id>/bookmarks', methods=['GET', 'POST'])
+def api_user_bookmarks(user_id):
+    user = UserEntity.get_by_id(user_id)
+    if user is None:
+        return "Not Found", 404
+
+    if request.method == 'POST':
+        user.InsertBookmark(request.get_json().get("sublet_id"))
+        return ""
+        
     
 @app.route('/')
 def test():

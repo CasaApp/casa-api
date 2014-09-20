@@ -32,3 +32,13 @@ class UserEntity(ndb.Model):
         self.ParseJson(text)
         user_key = self.put()
         return self.Get(), self.Login()
+
+    def InsertBookmark(self, sublet_id):
+        if not sublet_id in self.bookmarks:
+            self.bookmarks.append(sublet_id)
+            self.put()
+
+    def DeleteBookmark(self, sublet_id):
+        if sublet_id in self.bookmarks:
+            self.bookmarks.remove(sublet_id)
+            self.put()
