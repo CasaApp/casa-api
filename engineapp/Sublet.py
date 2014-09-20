@@ -43,7 +43,7 @@ class SubletEntity(ndb.Model):
     
     def Delete(self):
         self.key.delete()
-        return json.dumps({"status": "success"})
+        return {"status": "success"}
 
     def ParseJson(self, text):
         self.address = text.get("address")

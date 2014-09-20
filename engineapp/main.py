@@ -15,7 +15,9 @@ app = Flask(__name__)
 # the App Engine WSGI application server.
 
 def get_date(date_string):
-    return datetime.fromtimestamp(time.mktime(time.strptime(date_string, "%Y-%m-%d")))    
+    return datetime.fromtimestamp(time.mktime(time.strptime(date_string, "%Y-%m-%d")))
+def print_json(text):
+    return Response(json.dumps(text), mimetype="application/json")
 
 @app.route('/api/sublets/<int:sublet_id>', methods=['GET', 'PUT', 'DELETE'])
 def api_sublet_with_id(sublet_id):
@@ -24,12 +26,12 @@ def api_sublet_with_id(sublet_id):
         return "Not Found", 404
     
     if request.method == 'GET':
-        return Response(json.dumps(sublet.Get()), mimetype="application/json")
+        return print_json(sublet.Get())
     elif request.method == 'PUT':
         json_text = request.get_json()
-        return Response(json.dumps(sublet.Put(json_text)), mimetype="application/json")
+        return print_json(sublet.Put(json_text))
     elif request.method == 'DELETE':
-        return Response(sublet.Delete(), mimetype="application/json")
+        return print_json(sublet.Delete())
            
 @app.route('/api/sublets', methods=['GET', 'POST'])
 def api_sublets():
@@ -70,7 +72,7 @@ def api_sublets():
 
         more = len(infos) > offset + limit
         #infos = [s.Get() for s in sublets[offset:offset + limit] if geopy.distance.distance(geopy.Point(s.location.lat, s.location.lon), center) <= radius]
-        return Response(json.dumps({"limit": limit, "offset": offset, "more": more, "sublets": infos[offset:offset + limit]}), mimetype="application/json")
+        return print_json({"limit": limit, "offset": offset, "more": more, "sublets": infos[offset:offset + limit]})
 
 @app.route('/api/users', methods=['POST'])
 def api_users():
@@ -79,7 +81,27 @@ def api_users():
         user = UserEntity()
         return_data, token = user.Post(json_text)
         return_dict = {"user": return_data, "token": token}
-        return Response(json.dumps(return_dict), mimetype="application/json"), 201
+        return print_json(return_dict), 201
+
+def check_auth(username, password):
+    accounts = UserEntity.query(UserEntity.email == username).fetch()
+    if len(accounts) < 1:
+        return False
+    account = accounts[0]
+    return account.CheckPassword(password), account
+
+@app.route('/api/authenticate', methods=['POST', 'DELETE'])
+def api_authenticate():
+    if request.method == 'POST':
+        auth = request.authorization
+        if not auth:
+            return 'Unauthorized', 401
+        verified, account = check_auth(auth.username, auth.password)
+        if not verified:
+            return 'Unauthorized', 401
+        return print_json({"user": account.Get(), "token": account.Login()})
+    elif request.method =='DELETE':
+        pass
     
 @app.route('/')
 def test():

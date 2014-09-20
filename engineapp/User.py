@@ -18,6 +18,9 @@ class UserEntity(ndb.Model):
                             creation_time = datetime.datetime.now())
         token_key = token.put()
         return {"token": token_key.urlsafe(),"expires_in": token.EXPIRE_TIME}
+
+    def CheckPassword(self, password):
+        return check_password_hash(self.pw_hash, password)
     
     def Get(self):
         post_data = {"name": self.name,
