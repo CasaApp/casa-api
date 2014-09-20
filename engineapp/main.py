@@ -117,15 +117,22 @@ def api_sublets():
 def api_users():
     if request.method == 'POST':
         json_text = request.get_json()
+        
+        username = json_text.get("email")
+        accounts = UserEntity.query(UserEntity.email == username).fetch(1)
+        if len(accounts) > 0:
+            return "Conflict", 409
+        
         user = UserEntity()
         return_data, token = user.Post(json_text)
         return_dict = {"user": return_data, "token": token}
         return print_json(return_dict), 201
 
 def check_auth(username, password):
-    accounts = UserEntity.query(UserEntity.email == username).fetch()
+    accounts = UserEntity.query(UserEntity.email == username).fetch(1)
     if len(accounts) < 1:
-        return False
+        return False, None
+    
     account = accounts[0]
     return account.CheckPassword(password), account
 
