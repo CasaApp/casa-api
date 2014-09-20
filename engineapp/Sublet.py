@@ -1,8 +1,13 @@
 from google.appengine.ext import ndb
 import json
+import time
+from datetime import datetime
+
+def get_date(date_string):
+    return datetime.fromtimestamp(time.mktime(time.strptime(date_string, "%Y-%m-%d")))
+
 class SubletEntity(ndb.Model):
 
-    
     address = ndb.StringProperty()
     price = ndb.FloatProperty()
     tags = ndb.StringProperty(repeated=True)
@@ -11,8 +16,8 @@ class SubletEntity(ndb.Model):
     end_date = ndb.DateTimeProperty()
     description = ndb.TextProperty()
     
-    def Get(self, sublet_id):
-        post_data = {"sublet_id": sublet_id,
+    def Get(self):
+        post_data = {"sublet_id": self.key.id(),
                      "price": self.price,
                      "address": self.address,
                      "tags": self.tags,
@@ -21,18 +26,25 @@ class SubletEntity(ndb.Model):
                      "description": self.description
                      }
         return json.dumps(post_data)
-
-    def Put(self):
-        return "This is a put"
-
-    def Post(self):
-        sublet_key = self.put()
-        return self.Get(sublet_key.id())
     
-    @staticmethod
-    def Delete(sublet_id):
-        sublet_key = ndb.Key(SubletEntity, sublet_id)
-        if sublet_key.get() is None:
-            return json.dumps({"status": "failure"})
-        sublet_key.delete()
+    def Put(self, json_text):
+        return self.Post(json_text)
+
+    def Post(self, json_text):
+        self.ParseJson(json_text)
+        self.put()
+        return self.Get()
+    
+    def Delete(self):
+        self.key.delete()
         return json.dumps({"status": "success"})
+
+    def ParseJson(self, text):
+        self.address = text.get("address")
+        self.price = text.get("price")
+        if not text.get("tags") is None:
+            self.tags = text.get("tags")
+        self.location = ndb.GeoPt(text.get("latitude"), text.get("longitude"))
+        self.start_date = get_date(text.get("start_date"))
+        self.end_date = get_date(text.get("end_date"))
+        self.description = text.get("description")
