@@ -128,6 +128,21 @@ def api_user_bookmarks(user_id):
     if request.method == 'POST':
         user.InsertBookmark(request.get_json().get("sublet_id"))
         return ""
+    elif request.method == 'GET':
+        offset = request.args.get("offset", 0)
+        limit = request.args.get("limit", 10)
+        more = len(user.bookmarks) > offset + limit
+        infos = []
+
+        # clear deleted ones, inefficent but whatever >.>
+        user.bookmarks = [bookmark for bookmark in user.bookmarks if not SubletEntity.get_by_id(bookmark) is None]
+        user.put()
+            
+        for sublet_id in user.bookmarks[offset:offset + limit]:
+            sublet = SubletEntity.get_by_id(sublet_id)
+            infos.append(sublet.Get())
+            
+        return print_json({"limit": limit, "offset": offset, "more": more, "sublets": infos})
         
     
 @app.route('/')
