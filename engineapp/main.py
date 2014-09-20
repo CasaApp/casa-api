@@ -8,7 +8,18 @@ app = Flask(__name__)
 # Note: We don't need to call run() since our application is embedded within
 # the App Engine WSGI application server.
 
-@app.route('/api/sublet', methods=['GET', 'PUT', 'POST', 'DELETE'])
+@app.route('/api/sublet/<int:sublet_id>', methods=['GET', 'PUT', 'DELETE'])
+def api_sublet_with_id(sublet_id):
+    if request.method == 'GET':
+        sublet = SubletEntity.get_by_id(sublet_id)
+        return sublet.Get(sublet_id)
+    elif request.method == 'PUT':
+        pass
+    elif request.method == 'DELETE':
+        pass
+    return "SUBLET ID"
+           
+@app.route('/api/sublet', methods=['GET', 'POST'])
 def api_sublet():
     if request.method == 'POST':
         json = request.get_json()
@@ -18,14 +29,10 @@ def api_sublet():
         if not json.get("tags") is None:
             sublet.tags = json.get("tags")
         sublet.location = ndb.GeoPt(json.get("latitude"), json.get("longtitude"))
-        return sublet.Post()
+        return sublet.Post(), 201
     elif request.method == 'GET':
         sublet = SubletEntity()
         return sublet.Get()
-    elif request.method == 'PUT':
-        return sublet.Put()
-    elif request.method == 'DELETE':
-        return sublet.Delete()
 
 @app.route('/')
 def test():
