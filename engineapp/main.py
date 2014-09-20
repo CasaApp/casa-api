@@ -74,10 +74,11 @@ def api_sublets():
                 infos.append(info)
         
         infos = sorted(infos, key=itemgetter(sort))
-        
-        more = len(infos) > offset + limit
+
+        total_count = len(infos)
+        more = total_count > offset + limit
         #infos = [s.Get() for s in sublets[offset:offset + limit] if geopy.distance.distance(geopy.Point(s.location.lat, s.location.lon), center) <= radius]
-        return print_json({"limit": limit, "offset": offset, "more": more, "sublets": infos[offset:offset + limit]})
+        return print_json({"limit": limit, "offset": offset, "more": more, "sublets": infos[offset:offset + limit], "total_count": total_count})
 
 @app.route('/api/users', methods=['POST'])
 def api_users():
@@ -131,7 +132,8 @@ def api_users_bookmarks(user_id):
     elif request.method == 'GET':
         offset = request.args.get("offset", 0)
         limit = request.args.get("limit", 10)
-        more = len(user.bookmarks) > offset + limit
+        total_count = len(user.bookmarks)
+        more = total_count > offset + limit
         infos = []
 
         # clear deleted ones, inefficent but whatever >.>
@@ -142,7 +144,7 @@ def api_users_bookmarks(user_id):
             sublet = SubletEntity.get_by_id(sublet_id)
             infos.append(sublet.Get())
             
-        return print_json({"limit": limit, "offset": offset, "more": more, "sublets": infos})
+        return print_json({"limit": limit, "offset": offset, "more": more, "sublets": infos, "total": total_count})
         
 @app.route('/api/users/<int:user_id>/bookmarks/<int:sublet_id>', methods=['DELETE'])
 def api_users_bookmarks_with_sublet_id(user_id, sublet_id):
