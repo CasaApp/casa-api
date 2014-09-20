@@ -32,7 +32,9 @@ class SubletEntity(ndb.Model):
                      "city": self.city,
                      "rooms_available": self.rooms_available,
                      "rooms_total": self.rooms_total,
-                     "image_ids": self.image_ids
+                     "image_ids": self.image_ids,
+					 "latitude": self.location.lat,
+					 "longitude": self.location.lon
                      }
         return post_data
     
