@@ -184,7 +184,7 @@ def api_users_bookmarks(user_id):
             sublet = SubletEntity.get_by_id(sublet_id)
             infos.append(sublet.Get())
             
-        return print_json({"limit": limit, "offset": offset, "more": more, "sublets": infos, "total": total_count})
+        return print_json({"limit": limit, "offset": offset, "more": more, "sublets": infos, "total_count": total_count})
         
 @app.route('/api/users/<int:user_id>/bookmarks/<int:sublet_id>', methods=['DELETE'])
 def api_users_bookmarks_with_sublet_id(user_id, sublet_id):
