@@ -25,7 +25,7 @@ class SubletEntity(ndb.Model):
                      "end_date": self.end_date.isoformat(),
                      "description": self.description
                      }
-        return json.dumps(post_data)
+        return post_data
     
     def Put(self, json_text):
         return self.Post(json_text)

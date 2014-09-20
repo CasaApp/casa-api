@@ -1,8 +1,10 @@
 from flask import Flask
 from flask import request
-from flask import redirect
+from flask import Response
 from Sublet import SubletEntity
 from google.appengine.ext import ndb
+from google.appengine.datastore.datastore_query import Cursor
+import json
 app = Flask(__name__)
 
 # Note: We don't need to call run() since our application is embedded within
@@ -15,22 +17,41 @@ def api_sublet_with_id(sublet_id):
         return "Not Found", 404
     
     if request.method == 'GET':
-        return sublet.Get(sublet_id)
+        return Response(json.dumps(sublet.Get()), mimetype="application/json")
     elif request.method == 'PUT':
-        json = request.get_json()
-        return sublet.Put(json)
+        json_text = request.get_json()
+        return Response(json.dumps(sublet.Put(json_text)), mimetype="application/json")
     elif request.method == 'DELETE':
-        return sublet.Delete()
+        return Response(sublet.Delete(), mimetype="application/json")
            
 @app.route('/api/sublets', methods=['GET', 'POST'])
 def api_sublet():
     if request.method == 'POST':
-        json = request.get_json()
+        json_text = request.get_json()
         sublet = SubletEntity()
-        return sublet.Post(json), 201
+        return Response(json.dumps(sublet.Post(json_text)), mimetype="application/json"), 201
     elif request.method == 'GET':
-        sublet = SubletEntity()
-        return sublet.Get()
+        limit = int(request.args.get("limit", 10))
+        offset = int(request.args.get("offset", 0))
+        minimum_price = float(request.args.get("minimum_price", 0))
+        maximum_price = float(request.args.get("maximum_price", 1000000))
+
+        #tags
+        tag_text = request.args.get("tags", "")
+        if tag_text == "":
+            tags = []
+        else:
+            tags = tag_text.split(',')
+
+            
+        qry = SubletEntity.query(SubletEntity.price >= minimum_price,
+                                 SubletEntity.price <= maximum_price,
+                                 *[SubletEntity.tags == tag for tag in tags])
+        sublets = qry.fetch()
+        infos = [s.Get() for s in sublets]
+
+        more = len(sublets) > offset + limit
+        return Response(json.dumps({"limit": limit, "offset": offset, "more": more, "sublets": infos[offset:offset + limit]}), mimetype="application/json")
 
 @app.route('/')
 def test():
