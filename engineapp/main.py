@@ -58,7 +58,7 @@ def api_sublet_image_with_image_id(sublet_id, image_id):
 
     if request.method == 'DELETE':
         sublet.RemoveImage(image_id)
-        return print_json({"status": "success"})
+        return print_json(sublet.Get())
 
 @app.route('/api/images/<int:image_id>', methods=['GET'])
 def api_images(image_id):
@@ -163,8 +163,8 @@ def api_users_bookmarks(user_id):
         user.InsertBookmark(request.get_json().get("sublet_id"))
         return print_json({"status":"success"})
     elif request.method == 'GET':
-        offset = request.args.get("offset", 0)
-        limit = request.args.get("limit", 10)
+        offset = int(request.args.get("offset", 0))
+        limit = int(request.args.get("limit", 10))
         total_count = len(user.bookmarks)
         more = total_count > offset + limit
         infos = []
