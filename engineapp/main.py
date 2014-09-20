@@ -4,6 +4,7 @@ from flask import Response
 from Sublet import SubletEntity
 from User import UserEntity
 from Token import TokenEntity
+from Image import ImageEntity
 from google.appengine.ext import ndb
 import json
 import geopy
@@ -34,6 +35,38 @@ def api_sublet_with_id(sublet_id):
         return print_json(sublet.Put(json_text))
     elif request.method == 'DELETE':
         return print_json(sublet.Delete())
+
+@app.route('/api/sublets/<int:sublet_id>/images', methods=['POST'])
+def api_sublet_image(sublet_id):
+    #return "hello1
+    sublet = SubletEntity.get_by_id(sublet_id)
+    if sublet is None:
+        return "Not Found", 404
+    if request.method == 'POST':
+        file_data = request.files['image']
+        image = file_data.read()
+        if image:
+            return print_json(sublet.AddImage(image))
+        else:
+            return "Bad Request", 400
+
+@app.route('/api/sublets/<int:sublet_id>/images/<int:image_id>', methods=['DELETE'])
+def api_sublet_image_with_image_id(sublet_id, image_id):
+    sublet = SubletEntity.get_by_id(sublet_id)
+    if sublet is None:
+        return "Not Found", 404
+
+    if request.method == 'DELETE':
+        sublet.RemoveImage(image_id)
+        return print_json({"status": "success"})
+
+@app.route('/api/images/<int:image_id>', methods=['GET'])
+def api_images(image_id):
+    image = ImageEntity.get_by_id(image_id)
+    if image is None:
+        return "Not Found", 404
+
+    return Response(image.image, mimetype="image/png")
            
 @app.route('/api/sublets', methods=['GET', 'POST'])
 def api_sublets():

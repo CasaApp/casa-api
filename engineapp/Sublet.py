@@ -2,6 +2,7 @@ from google.appengine.ext import ndb
 import json
 import time
 from datetime import datetime
+from Image import ImageEntity
 
 def get_date(date_string):
     return datetime.fromtimestamp(time.mktime(time.strptime(date_string, "%Y-%m-%d")))
@@ -18,6 +19,7 @@ class SubletEntity(ndb.Model):
     city = ndb.StringProperty()
     rooms_available = ndb.IntegerProperty()
     rooms_total = ndb.IntegerProperty()
+    image_ids = ndb.IntegerProperty(repeated=True)
     
     def Get(self):
         post_data = {"sublet_id": self.key.id(),
@@ -29,7 +31,8 @@ class SubletEntity(ndb.Model):
                      "description": self.description,
                      "city": self.city,
                      "rooms_available": self.rooms_available,
-                     "rooms_total": self.rooms_total
+                     "rooms_total": self.rooms_total,
+                     "image_ids": self.image_ids
                      }
         return post_data
     
@@ -57,3 +60,20 @@ class SubletEntity(ndb.Model):
         self.city = text.get("city")
         self.rooms_available = text.get("rooms_available")
         self.rooms_total = text.get("rooms_total")
+
+    def AddImage(self, blob):
+        image = ImageEntity()
+        image.image = blob
+        self.image_ids.append(image.Save())
+        self.put()
+        return self.Get()
+
+    def RemoveImage(self, image_id):
+        if image_id in self.image_ids:
+            self.image_ids.remove(image_id)
+            self.put()
+            image = ImageEntity.get_by_id(image_id)
+            image.key.delete()
+        
+        
+        
