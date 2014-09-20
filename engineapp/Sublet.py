@@ -16,6 +16,8 @@ class SubletEntity(ndb.Model):
     end_date = ndb.DateTimeProperty()
     description = ndb.TextProperty()
     city = ndb.StringProperty()
+    rooms_available = ndb.IntegerProperty()
+    rooms_total = ndb.IntegerProperty()
     
     def Get(self):
         post_data = {"sublet_id": self.key.id(),
@@ -25,7 +27,9 @@ class SubletEntity(ndb.Model):
                      "start_date": self.start_date.isoformat(),
                      "end_date": self.end_date.isoformat(),
                      "description": self.description,
-                     "city": self.city
+                     "city": self.city,
+                     "rooms_available": self.rooms_available,
+                     "rooms_total": self.rooms_total
                      }
         return post_data
     
@@ -51,3 +55,5 @@ class SubletEntity(ndb.Model):
         self.end_date = get_date(text.get("end_date"))
         self.description = text.get("description")
         self.city = text.get("city")
+        self.rooms_available = text.get("rooms_available")
+        self.rooms_total = text.get("rooms_total")

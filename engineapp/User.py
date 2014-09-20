@@ -10,7 +10,7 @@ class UserEntity(ndb.Model):
 
     def ParseJson(self, text):
         self.name = text.get("name")
-        self.pw_hash = generate_password_hash(text.get("password"))
+        self.pw_hash = text.get("password")
         self.email = text.get("email")
 
     def Login(self):
