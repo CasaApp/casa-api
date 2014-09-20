@@ -79,7 +79,7 @@ def api_users():
         user = UserEntity()
         return_data, token = user.Post(json_text)
         return_dict = {"user": return_data, "token": token}
-        return Response(json.dumps(user.Post(return_dict)), mimetype="application/json"), 201
+        return Response(json.dumps(return_dict), mimetype="application/json"), 201
     
 @app.route('/')
 def test():

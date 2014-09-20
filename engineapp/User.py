@@ -10,7 +10,7 @@ class UserEntity(ndb.Model):
 
     def ParseJson(self, text):
         self.name = text.get("name")
-        self.pw_hash = text.get("password")
+        self.pw_hash = generate_password_hash(text.get("password"))
         self.email = text.get("email")
 
     def Login(self):
@@ -23,9 +23,9 @@ class UserEntity(ndb.Model):
         post_data = {"name": self.name,
                      "email": self.email,
                      "user_id": self.key.id()}
-        return post_data, self.Login()
+        return post_data
 
     def Post(self, text):
         self.ParseJson(text)
         user_key = self.put()
-        return self.Get()
+        return self.Get(), self.Login()
