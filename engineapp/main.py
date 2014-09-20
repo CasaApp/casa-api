@@ -105,6 +105,14 @@ def api_authenticate():
         token_key = ndb.Key(urlsafe=request.args.get("token"))
         token_key.delete()
         return ""
+@app.route('/api/users/<int:user_id>', methods=['GET', 'PUT'])
+def api_user_with_id(user_id):
+    user = UserEntity.get_by_id(user_id)
+    if user is None:
+        return "Not Found", 404
+    
+    if request.method == 'GET':
+        return print_json(user.Get())
     
 @app.route('/')
 def test():
