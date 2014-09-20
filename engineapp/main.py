@@ -3,12 +3,14 @@ from flask import request
 from flask import Response
 from Sublet import SubletEntity
 from google.appengine.ext import ndb
-from google.appengine.datastore.datastore_query import Cursor
 import json
+import geopy
+import geopy.distance
 app = Flask(__name__)
 
 # Note: We don't need to call run() since our application is embedded within
 # the App Engine WSGI application server.
+    
 
 @app.route('/api/sublets/<int:sublet_id>', methods=['GET', 'PUT', 'DELETE'])
 def api_sublet_with_id(sublet_id):
@@ -35,7 +37,9 @@ def api_sublet():
         offset = int(request.args.get("offset", 0))
         minimum_price = float(request.args.get("minimum_price", 0))
         maximum_price = float(request.args.get("maximum_price", 1000000))
-
+        #geosearch
+        center = geopy.Point(float(request.args.get("latitude")), float(request.args.get("longitude")))
+        radius = float(request.args.get("radius"))
         #tags
         tag_text = request.args.get("tags", "")
         if tag_text == "":
@@ -48,10 +52,17 @@ def api_sublet():
                                  SubletEntity.price <= maximum_price,
                                  *[SubletEntity.tags == tag for tag in tags])
         sublets = qry.fetch()
-        infos = [s.Get() for s in sublets]
-
         more = len(sublets) > offset + limit
-        return Response(json.dumps({"limit": limit, "offset": offset, "more": more, "sublets": infos[offset:offset + limit]}), mimetype="application/json")
+        #should implement google's searches later
+        infos = []
+        for s in sublets[offset:offset + limit]:
+            distance = geopy.distance.distance(geopy.Point(s.location.lat, s.location.lon), center).kilometers
+            if distance <= radius:
+                info = s.Get()
+                info["distance"] = distance
+                infos.append(info)
+        #infos = [s.Get() for s in sublets[offset:offset + limit] if geopy.distance.distance(geopy.Point(s.location.lat, s.location.lon), center) <= radius]
+        return Response(json.dumps({"limit": limit, "offset": offset, "more": more, "sublets": infos}), mimetype="application/json")
 
 @app.route('/')
 def test():
