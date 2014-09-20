@@ -2,6 +2,7 @@ from flask import Flask
 from flask import request
 from flask import Response
 from Sublet import SubletEntity
+from User import UserEntity
 from google.appengine.ext import ndb
 import json
 import geopy
@@ -27,7 +28,7 @@ def api_sublet_with_id(sublet_id):
         return Response(sublet.Delete(), mimetype="application/json")
            
 @app.route('/api/sublets', methods=['GET', 'POST'])
-def api_sublet():
+def api_sublets():
     if request.method == 'POST':
         json_text = request.get_json()
         sublet = SubletEntity()
@@ -64,6 +65,15 @@ def api_sublet():
         #infos = [s.Get() for s in sublets[offset:offset + limit] if geopy.distance.distance(geopy.Point(s.location.lat, s.location.lon), center) <= radius]
         return Response(json.dumps({"limit": limit, "offset": offset, "more": more, "sublets": infos}), mimetype="application/json")
 
+@app.route('/api/users', methods=['POST'])
+def api_users():
+    if request.method == 'POST':
+        json_text = request.get_json()
+        user = UserEntity()
+        return_data, token = user.Post(json_text)
+        return_dict = {"user": return_data, "token": token}
+        return Response(json.dumps(user.Post(return_dict)), mimetype="application/json"), 201
+    
 @app.route('/')
 def test():
     return "Hello World!"
