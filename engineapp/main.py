@@ -111,7 +111,7 @@ def api_authenticate():
         return ""
     
 @app.route('/api/users/<int:user_id>', methods=['GET', 'PUT'])
-def api_user_with_id(user_id):
+def api_users_with_id(user_id):
     user = UserEntity.get_by_id(user_id)
     if user is None:
         return "Not Found", 404
@@ -120,7 +120,7 @@ def api_user_with_id(user_id):
         return print_json(user.Get())
 
 @app.route('/api/users/<int:user_id>/bookmarks', methods=['GET', 'POST'])
-def api_user_bookmarks(user_id):
+def api_users_bookmarks(user_id):
     user = UserEntity.get_by_id(user_id)
     if user is None:
         return "Not Found", 404
@@ -144,6 +144,15 @@ def api_user_bookmarks(user_id):
             
         return print_json({"limit": limit, "offset": offset, "more": more, "sublets": infos})
         
+@app.route('/api/users/<int:user_id>/bookmarks/<int:sublet_id>', methods=['DELETE'])
+def api_users_bookmarks_with_sublet_id(user_id, sublet_id):
+    user = UserEntity.get_by_id(user_id)
+    if user is None:
+        return "Not Found", 404
+
+    if request.method == 'DELETE':
+        user.DeleteBookmark(sublet_id)
+        return ""
     
 @app.route('/')
 def test():
