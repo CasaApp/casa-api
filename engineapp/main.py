@@ -38,8 +38,8 @@ def get_date(date_string):
 def print_json(text):
     return Response(json.dumps(text), mimetype="application/json")
 
-@app.route('/api/sublets/<int:sublet_id>', methods=['GET', 'PUT', 'DELETE'])
-@add_response_headers({'Access-Control-Allow-Origin': '*'})
+@app.route('/api/sublets/<int:sublet_id>', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])
+@add_response_headers({'Access-Control-Allow-Origin': '*', "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept"})
 def api_sublet_with_id(sublet_id):
     sublet = SubletEntity.get_by_id(sublet_id)
     if sublet is None:
@@ -52,9 +52,10 @@ def api_sublet_with_id(sublet_id):
         return print_json(sublet.Put(json_text))
     elif request.method == 'DELETE':
         return print_json(sublet.Delete())
+    return ""
 
-@app.route('/api/sublets/<int:sublet_id>/images', methods=['POST'])
-@add_response_headers({'Access-Control-Allow-Origin': '*'})
+@app.route('/api/sublets/<int:sublet_id>/images', methods=['POST', 'OPTIONS'])
+@add_response_headers({'Access-Control-Allow-Origin': '*', "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept"})
 def api_sublet_image(sublet_id):
     sublet = SubletEntity.get_by_id(sublet_id)
     if sublet is None:
@@ -66,9 +67,10 @@ def api_sublet_image(sublet_id):
             return print_json(sublet.AddImage(image))
         else:
             return "Bad Request", 400
+    return ""
 
-@app.route('/api/sublets/<int:sublet_id>/images/<int:image_id>', methods=['DELETE'])
-@add_response_headers({'Access-Control-Allow-Origin': '*'})
+@app.route('/api/sublets/<int:sublet_id>/images/<int:image_id>', methods=['DELETE', 'OPTIONS'])
+@add_response_headers({'Access-Control-Allow-Origin': '*', "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept"})
 def api_sublet_image_with_image_id(sublet_id, image_id):
     sublet = SubletEntity.get_by_id(sublet_id)
     if sublet is None:
@@ -77,9 +79,10 @@ def api_sublet_image_with_image_id(sublet_id, image_id):
     if request.method == 'DELETE':
         sublet.RemoveImage(image_id)
         return print_json(sublet.Get())
+    return ""
 
-@app.route('/api/images/<int:image_id>', methods=['GET'])
-@add_response_headers({'Access-Control-Allow-Origin': '*'})
+@app.route('/api/images/<int:image_id>', methods=['GET', 'OPTIONS'])
+@add_response_headers({'Access-Control-Allow-Origin': '*', "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept"})
 def api_images(image_id):
     image = ImageEntity.get_by_id(image_id)
     if image is None:
@@ -87,8 +90,8 @@ def api_images(image_id):
 
     return Response(image.image, mimetype="image/png")
            
-@app.route('/api/sublets', methods=['GET', 'POST'])
-@add_response_headers({'Access-Control-Allow-Origin': '*'})
+@app.route('/api/sublets', methods=['GET', 'POST', 'OPTIONS'])
+@add_response_headers({'Access-Control-Allow-Origin': '*', "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept"})
 def api_sublets():
     if request.method == 'POST':
         auth = request.headers.get('Authorization')
@@ -144,9 +147,10 @@ def api_sublets():
         more = total_count > offset + limit
         #infos = [s.Get() for s in sublets[offset:offset + limit] if geopy.distance.distance(geopy.Point(s.location.lat, s.location.lon), center) <= radius]
         return print_json({"limit": limit, "offset": offset, "more": more, "sublets": infos[offset:offset + limit], "total_count": total_count})
+    return ""
 
-@app.route('/api/users', methods=['POST'])
-@add_response_headers({'Access-Control-Allow-Origin': '*'})
+@app.route('/api/users', methods=['POST', 'OPTIONS'])
+@add_response_headers({'Access-Control-Allow-Origin': '*', "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept"})
 def api_users():
     if request.method == 'POST':
         json_text = request.get_json()
@@ -160,6 +164,7 @@ def api_users():
         return_data, token = user.Post(json_text)
         return_dict = {"user": return_data, "token": token}
         return print_json(return_dict), 201
+    return ""
 
 def check_auth(username, password):
     accounts = UserEntity.query(UserEntity.email == username).fetch(1)
@@ -169,8 +174,8 @@ def check_auth(username, password):
     account = accounts[0]
     return account.CheckPassword(password), account
 
-@app.route('/api/authenticate', methods=['POST', 'DELETE'])
-@add_response_headers({'Access-Control-Allow-Origin': '*'})
+@app.route('/api/authenticate', methods=['POST', 'DELETE', 'OPTIONS'])
+@add_response_headers({'Access-Control-Allow-Origin': '*', "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept"})
 def api_authenticate():
     if request.method == 'POST':
         auth = request.authorization
@@ -184,9 +189,10 @@ def api_authenticate():
         token_key = ndb.Key(urlsafe=request.args.get("token"))
         token_key.delete()
         return print_json({"status":"success"})
+    return ""
     
-@app.route('/api/users/<int:user_id>', methods=['GET', 'PUT'])
-@add_response_headers({'Access-Control-Allow-Origin': '*'})
+@app.route('/api/users/<int:user_id>', methods=['GET', 'PUT', 'OPTIONS'])
+@add_response_headers({'Access-Control-Allow-Origin': '*', "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept"})
 def api_users_with_id(user_id):
     user = UserEntity.get_by_id(user_id)
     if user is None:
@@ -194,9 +200,10 @@ def api_users_with_id(user_id):
     
     if request.method == 'GET':
         return print_json(user.Get())
+    return ""
 
-@app.route('/api/users/<int:user_id>/bookmarks', methods=['GET', 'POST'])
-@add_response_headers({'Access-Control-Allow-Origin': '*'})
+@app.route('/api/users/<int:user_id>/bookmarks', methods=['GET', 'POST', 'OPTIONS'])
+@add_response_headers({'Access-Control-Allow-Origin': '*', "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept"})
 def api_users_bookmarks(user_id):
     user = UserEntity.get_by_id(user_id)
     if user is None:
@@ -221,9 +228,10 @@ def api_users_bookmarks(user_id):
             infos.append(sublet.Get())
             
         return print_json({"limit": limit, "offset": offset, "more": more, "sublets": infos, "total_count": total_count})
+    return ""
         
-@app.route('/api/users/<int:user_id>/bookmarks/<int:sublet_id>', methods=['DELETE'])
-@add_response_headers({'Access-Control-Allow-Origin': '*'})
+@app.route('/api/users/<int:user_id>/bookmarks/<int:sublet_id>', methods=['DELETE', 'OPTIONS'])
+@add_response_headers({'Access-Control-Allow-Origin': '*', "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept"})
 def api_users_bookmarks_with_sublet_id(user_id, sublet_id):
     user = UserEntity.get_by_id(user_id)
     if user is None:
@@ -232,9 +240,10 @@ def api_users_bookmarks_with_sublet_id(user_id, sublet_id):
     if request.method == 'DELETE':
         user.DeleteBookmark(sublet_id)
         return print_json({"status":"success"})
+    return ""
     
 @app.route('/')
-@add_response_headers({'Access-Control-Allow-Origin': '*'})
+@add_response_headers({'Access-Control-Allow-Origin': '*', "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept"})
 def test():
     return "Hello World!"
 
