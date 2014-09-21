@@ -20,6 +20,7 @@ class SubletEntity(ndb.Model):
     rooms_available = ndb.IntegerProperty()
     rooms_total = ndb.IntegerProperty()
     image_ids = ndb.IntegerProperty(repeated=True)
+    owner_id = ndb.IntegerProperty()
     
     def Get(self):
         post_data = {"sublet_id": self.key.id(),
@@ -33,16 +34,18 @@ class SubletEntity(ndb.Model):
                      "rooms_available": self.rooms_available,
                      "rooms_total": self.rooms_total,
                      "image_ids": self.image_ids,
-					 "latitude": self.location.lat,
-					 "longitude": self.location.lon
+		     "latitude": self.location.lat,
+		     "longitude": self.location.lon,
+                     "owner_id": self.owner_id
                      }
         return post_data
     
     def Put(self, json_text):
         return self.Post(json_text)
 
-    def Post(self, json_text):
+    def Post(self, json_text, owner_id):
         self.ParseJson(json_text)
+        self.owner_id = owner_id
         self.put()
         return self.Get()
     

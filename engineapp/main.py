@@ -11,6 +11,7 @@ import geopy
 import geopy.distance
 import time
 from datetime import datetime
+from datetime import timedelta
 from operator import itemgetter
 from functools import wraps
 from flask import make_response
@@ -55,7 +56,6 @@ def api_sublet_with_id(sublet_id):
 @app.route('/api/sublets/<int:sublet_id>/images', methods=['POST'])
 @add_response_headers({'Access-Control-Allow-Origin': '*'})
 def api_sublet_image(sublet_id):
-    #return "hello1
     sublet = SubletEntity.get_by_id(sublet_id)
     if sublet is None:
         return "Not Found", 404
@@ -91,9 +91,21 @@ def api_images(image_id):
 @add_response_headers({'Access-Control-Allow-Origin': '*'})
 def api_sublets():
     if request.method == 'POST':
+        auth = request.headers.get('Authorization')
+        if auth is None:
+            return 'Unauthorized', 401
+        token_key = auth.split()[1]
+        token = ndb.Key(urlsafe=token_key).get()
+        #check if token is expired
+        if datetime.now() > timedelta(seconds=token.EXPIRE_TIME) + token.creation_time:
+            token.key.delete()
+            return 'Unauthorized', 401
+        
+        user_id = token.user_id
+        
         json_text = request.get_json()
         sublet = SubletEntity()
-        return Response(json.dumps(sublet.Post(json_text)), mimetype="application/json"), 201
+        return print_json(sublet.Post(json_text, token.user_id)), 201
     elif request.method == 'GET':
         limit = int(request.args.get("limit", 10))
         offset = int(request.args.get("offset", 0))
