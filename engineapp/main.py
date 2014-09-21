@@ -12,7 +12,22 @@ import geopy.distance
 import time
 from datetime import datetime
 from operator import itemgetter
+from functools import wraps
+from flask import make_response
 app = Flask(__name__)
+
+def add_response_headers(headers={}):
+    """This decorator adds the headers passed in to the response"""
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            resp = make_response(f(*args, **kwargs))
+            h = resp.headers
+            for header, value in headers.items():
+                h[header] = value
+            return resp
+        return decorated_function
+    return decorator
 
 # Note: We don't need to call run() since our application is embedded within
 # the App Engine WSGI application server.
@@ -23,6 +38,7 @@ def print_json(text):
     return Response(json.dumps(text), mimetype="application/json")
 
 @app.route('/api/sublets/<int:sublet_id>', methods=['GET', 'PUT', 'DELETE'])
+@add_response_headers({'Access-Control-Allow-Origin': '*'})
 def api_sublet_with_id(sublet_id):
     sublet = SubletEntity.get_by_id(sublet_id)
     if sublet is None:
@@ -37,6 +53,7 @@ def api_sublet_with_id(sublet_id):
         return print_json(sublet.Delete())
 
 @app.route('/api/sublets/<int:sublet_id>/images', methods=['POST'])
+@add_response_headers({'Access-Control-Allow-Origin': '*'})
 def api_sublet_image(sublet_id):
     #return "hello1
     sublet = SubletEntity.get_by_id(sublet_id)
@@ -51,6 +68,7 @@ def api_sublet_image(sublet_id):
             return "Bad Request", 400
 
 @app.route('/api/sublets/<int:sublet_id>/images/<int:image_id>', methods=['DELETE'])
+@add_response_headers({'Access-Control-Allow-Origin': '*'})
 def api_sublet_image_with_image_id(sublet_id, image_id):
     sublet = SubletEntity.get_by_id(sublet_id)
     if sublet is None:
@@ -61,6 +79,7 @@ def api_sublet_image_with_image_id(sublet_id, image_id):
         return print_json(sublet.Get())
 
 @app.route('/api/images/<int:image_id>', methods=['GET'])
+@add_response_headers({'Access-Control-Allow-Origin': '*'})
 def api_images(image_id):
     image = ImageEntity.get_by_id(image_id)
     if image is None:
@@ -69,6 +88,7 @@ def api_images(image_id):
     return Response(image.image, mimetype="image/png")
            
 @app.route('/api/sublets', methods=['GET', 'POST'])
+@add_response_headers({'Access-Control-Allow-Origin': '*'})
 def api_sublets():
     if request.method == 'POST':
         json_text = request.get_json()
@@ -114,6 +134,7 @@ def api_sublets():
         return print_json({"limit": limit, "offset": offset, "more": more, "sublets": infos[offset:offset + limit], "total_count": total_count})
 
 @app.route('/api/users', methods=['POST'])
+@add_response_headers({'Access-Control-Allow-Origin': '*'})
 def api_users():
     if request.method == 'POST':
         json_text = request.get_json()
@@ -137,6 +158,7 @@ def check_auth(username, password):
     return account.CheckPassword(password), account
 
 @app.route('/api/authenticate', methods=['POST', 'DELETE'])
+@add_response_headers({'Access-Control-Allow-Origin': '*'})
 def api_authenticate():
     if request.method == 'POST':
         auth = request.authorization
@@ -152,6 +174,7 @@ def api_authenticate():
         return print_json({"status":"success"})
     
 @app.route('/api/users/<int:user_id>', methods=['GET', 'PUT'])
+@add_response_headers({'Access-Control-Allow-Origin': '*'})
 def api_users_with_id(user_id):
     user = UserEntity.get_by_id(user_id)
     if user is None:
@@ -161,6 +184,7 @@ def api_users_with_id(user_id):
         return print_json(user.Get())
 
 @app.route('/api/users/<int:user_id>/bookmarks', methods=['GET', 'POST'])
+@add_response_headers({'Access-Control-Allow-Origin': '*'})
 def api_users_bookmarks(user_id):
     user = UserEntity.get_by_id(user_id)
     if user is None:
@@ -187,6 +211,7 @@ def api_users_bookmarks(user_id):
         return print_json({"limit": limit, "offset": offset, "more": more, "sublets": infos, "total_count": total_count})
         
 @app.route('/api/users/<int:user_id>/bookmarks/<int:sublet_id>', methods=['DELETE'])
+@add_response_headers({'Access-Control-Allow-Origin': '*'})
 def api_users_bookmarks_with_sublet_id(user_id, sublet_id):
     user = UserEntity.get_by_id(user_id)
     if user is None:
@@ -197,6 +222,7 @@ def api_users_bookmarks_with_sublet_id(user_id, sublet_id):
         return print_json({"status":"success"})
     
 @app.route('/')
+@add_response_headers({'Access-Control-Allow-Origin': '*'})
 def test():
     return "Hello World!"
 
