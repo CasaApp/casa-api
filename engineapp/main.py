@@ -229,6 +229,15 @@ def api_users_bookmarks(user_id):
             
         return print_json({"limit": limit, "offset": offset, "more": more, "sublets": infos, "total_count": total_count})
     return ""
+
+@app.route('/api/users/<int:user_id>/listings', methods=['GET', 'OPTIONS'])
+@add_response_headers({'Access-Control-Allow-Origin': '*', "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept"})
+def api_users_listings(user_id):
+    if request.method == 'GET':
+        sublets = SubletEntity.query(SubletEntity.owner_id == user_id).fetch()
+        infos = [s.Get() for s in sublets]
+        return print_json(infos)
+    return ""
         
 @app.route('/api/users/<int:user_id>/bookmarks/<int:sublet_id>', methods=['DELETE', 'OPTIONS'])
 @add_response_headers({'Access-Control-Allow-Origin': '*', "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept"})
