@@ -117,6 +117,7 @@ def api_sublets():
         start_date = get_date(request.args.get("start_date"))
         end_date = get_date(request.args.get("end_date"))
         sort = request.args.get("sort", "distance")
+        rooms_available = int(request.args.get("rooms_available",1))
         #geosearch
         center = geopy.Point(float(request.args.get("latitude")), float(request.args.get("longitude")))
         radius = float(request.args.get("radius"))
@@ -136,7 +137,7 @@ def api_sublets():
         infos = []
         for s in sublets:
             distance = geopy.distance.distance(geopy.Point(s.location.lat, s.location.lon), center).kilometers
-            if distance <= radius and s.rooms_available > 0 and s.start_date <= start_date and s.end_date >= end_date:
+            if distance <= radius and s.rooms_available >= rooms_available and s.start_date <= start_date and s.end_date >= end_date:
                 info = s.Get()
                 info["distance"] = distance
                 infos.append(info)
